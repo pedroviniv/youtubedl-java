@@ -26,14 +26,22 @@ public class YoutubeDL {
     /**
      * Youtube-dl executable name
      */
-    protected static String executablePath = "youtube-dl";
+    private final String executablePath;
+
+    public YoutubeDL(String executablePath) {
+        this.executablePath = executablePath;
+    }
+
+    public YoutubeDL() {
+        this.executablePath = "youtube-dl";
+    }
 
     /**
      * Append executable name to command
      * @param command Command string
      * @return Command string
      */
-    protected static String buildCommand(String command) {
+    protected String buildCommand(String command) {
         return String.format("%s %s", executablePath, command);
     }
 
@@ -43,7 +51,7 @@ public class YoutubeDL {
      * @return response object
      * @throws YoutubeDLException
      */
-    public static YoutubeDLResponse execute(YoutubeDLRequest request) throws YoutubeDLException {
+    public YoutubeDLResponse execute(YoutubeDLRequest request) throws YoutubeDLException {
         return execute(request, null);
     }
 
@@ -54,7 +62,7 @@ public class YoutubeDL {
      * @return response object
      * @throws YoutubeDLException
      */
-    public static YoutubeDLResponse execute(YoutubeDLRequest request, DownloadProgressCallback callback) throws YoutubeDLException {
+    public YoutubeDLResponse execute(YoutubeDLRequest request, DownloadProgressCallback callback) throws YoutubeDLException {
 
         String command = buildCommand(request.buildOptions());
         String directory = request.getDirectory();
@@ -117,10 +125,10 @@ public class YoutubeDL {
      * @return version string
      * @throws YoutubeDLException
      */
-    public static String getVersion() throws YoutubeDLException {
+    public String getVersion() throws YoutubeDLException {
         YoutubeDLRequest request = new YoutubeDLRequest();
         request.setOption("version");
-        return YoutubeDL.execute(request).getOut();
+        return this.execute(request).getOut();
     }
 
     /**
@@ -129,13 +137,13 @@ public class YoutubeDL {
      * @return Video info
      * @throws YoutubeDLException
      */
-    public static VideoInfo getVideoInfo(String url) throws YoutubeDLException  {
+    public VideoInfo getVideoInfo(String url) throws YoutubeDLException  {
 
         // Build request
         YoutubeDLRequest request = new YoutubeDLRequest(url);
         request.setOption("dump-json");
         request.setOption("no-playlist");
-        YoutubeDLResponse response = YoutubeDL.execute(request);
+        YoutubeDLResponse response = this.execute(request);
 
         // Parse result
         ObjectMapper objectMapper = new ObjectMapper();
@@ -156,8 +164,8 @@ public class YoutubeDL {
      * @return list of formats
      * @throws YoutubeDLException
      */
-    public static List<VideoFormat> getFormats(String url) throws YoutubeDLException {
-        VideoInfo info = getVideoInfo(url);
+    public List<VideoFormat> getFormats(String url) throws YoutubeDLException {
+        VideoInfo info = this.getVideoInfo(url);
         return info.formats;
     }
 
@@ -167,8 +175,8 @@ public class YoutubeDL {
      * @return list of thumbnail
      * @throws YoutubeDLException
      */
-    public static List<VideoThumbnail> getThumbnails(String url) throws YoutubeDLException {
-        VideoInfo info = getVideoInfo(url);
+    public List<VideoThumbnail> getThumbnails(String url) throws YoutubeDLException {
+        VideoInfo info = this.getVideoInfo(url);
         return info.thumbnails;
     }
 
@@ -178,8 +186,8 @@ public class YoutubeDL {
      * @return list of category
      * @throws YoutubeDLException
      */
-    public static List<String> getCategories(String url) throws YoutubeDLException {
-        VideoInfo info = getVideoInfo(url);
+    public List<String> getCategories(String url) throws YoutubeDLException {
+        VideoInfo info = this.getVideoInfo(url);
         return info.categories;
     }
 
@@ -189,8 +197,8 @@ public class YoutubeDL {
      * @return list of tag
      * @throws YoutubeDLException
      */
-    public static List<String> getTags(String url) throws YoutubeDLException {
-        VideoInfo info = getVideoInfo(url);
+    public List<String> getTags(String url) throws YoutubeDLException {
+        VideoInfo info = this.getVideoInfo(url);
         return info.tags;
     }
 
@@ -198,15 +206,7 @@ public class YoutubeDL {
      * Get command executable or path to the executable
      * @return path string
      */
-    public static String getExecutablePath(){
+    public String getExecutablePath(){
         return executablePath;
-    }
-
-    /**
-     * Set path to use for the command
-     * @param path String path to the executable
-     */
-    public static void setExecutablePath(String path){
-        executablePath = path;
     }
 }
