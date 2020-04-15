@@ -10,8 +10,11 @@ import com.sapher.youtubedl.utils.StreamProcessExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Provide an interface for youtube-dl executable</p>
@@ -27,6 +30,8 @@ public class YoutubeDL {
      * Youtube-dl executable name
      */
     private final String executablePath;
+    private static final Pattern SPLIT_PATTERN = Pattern
+            .compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
 
     public YoutubeDL(String executablePath) {
         this.executablePath = executablePath;
@@ -54,6 +59,21 @@ public class YoutubeDL {
     public YoutubeDLResponse execute(YoutubeDLRequest request) throws YoutubeDLException {
         return execute(request, null);
     }
+    
+    private String[] splitCommand(String command) {
+        final List<String> matchList = new ArrayList<>();
+        final Matcher regexMatcher = SPLIT_PATTERN.matcher(command);
+        while (regexMatcher.find()) {
+            if (regexMatcher.group(1) != null) {
+                matchList.add(regexMatcher.group(1));
+            } else if (regexMatcher.group(2) != null) {
+                matchList.add(regexMatcher.group(2));
+            } else {
+                matchList.add(regexMatcher.group());
+            }
+        }
+        return matchList.toArray(new String[]{});
+    }
 
     /**
      * Execute youtube-dl request
@@ -75,7 +95,7 @@ public class YoutubeDL {
         StringBuffer errBuffer = new StringBuffer(); //stderr
         long startTime = System.nanoTime();
 
-        String[] split = command.split(" ");
+        String[] split = this.splitCommand(command);
 
         ProcessBuilder processBuilder = new ProcessBuilder(split);
 

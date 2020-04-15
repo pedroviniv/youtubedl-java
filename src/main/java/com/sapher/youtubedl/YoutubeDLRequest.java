@@ -43,10 +43,14 @@ public class YoutubeDLRequest {
     }
 
     public void setOption(String key) {
-        options.put(key, null);
+        options.put(key, "");
     }
 
     public void setOption(String key, String value) {
+        if (value == null) {
+            this.setOption(key);
+            return;
+        }
         options.put(key, value);
     }
 
@@ -63,6 +67,7 @@ public class YoutubeDLRequest {
 
     /**
      * Construct a request with a videoUrl
+     *
      * @param url
      */
     public YoutubeDLRequest(String url) {
@@ -71,6 +76,7 @@ public class YoutubeDLRequest {
 
     /**
      * Construct a request with a videoUrl and working directory
+     *
      * @param url
      * @param directory
      */
@@ -79,34 +85,44 @@ public class YoutubeDLRequest {
         this.directory = directory;
     }
 
+    private String formatOption(String key, String value) {
+        return String
+                .format("--%s %s", key, value)
+                .trim();
+    }
+
+    private String formatOption(Map.Entry<String, String> option) {
+        return this.formatOption(option.getKey(), option.getValue());
+    }
+
+    private String concatFormattedOptions(String concated, String next) {
+        return concated.concat(" ").concat(next);
+    }
+
     /**
      * Transform options to a string that the executable will execute
+     *
      * @return Command string
      */
-    protected String buildOptions() {
+    public String buildOptions() {
 
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
 
-        // Set Url
-        if(url != null)
-            builder.append(url + " ");
-
-        // Build options strings
-        Iterator it = options.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry option = (Map.Entry) it.next();
-
-            String name = (String) option.getKey();
-            String value = (String) option.getValue();
-
-            if(value == null) value = "";
-
-            String optionFormatted = String.format("--%s %s", name, value).trim();
-            builder.append(optionFormatted + " ");
-
-            it.remove();
+        if (this.url != null) {
+            builder.append(this.url).append(" ");
         }
 
-        return builder.toString().trim();
+        if (this.options.isEmpty()) {
+            return builder.toString().trim();
+        }
+
+        final String optionsString = this.options.entrySet().stream()
+                .map(this::formatOption)
+                .reduce(this::concatFormattedOptions)
+                .get();
+        
+        return builder
+                .append(optionsString)
+                .toString();
     }
 }
